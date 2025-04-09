@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { ChevronRight, Shield, FileText, Clock, Check, ArrowRight } from 'lucide-react';
-
+import { Link } from 'react-router-dom';
 function LandingPage() {
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState({
@@ -43,7 +43,7 @@ function LandingPage() {
         </div>
         
         <div className="flex space-x-4">
-          <button className="px-4 py-2 text-blue-600 hover:text-blue-800 transition-colors">Log In</button>
+        <Link to="/login" className="px-4 py-2 text-blue-600 hover:text-blue-800 transition-colors">Log In</Link>
           <button className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transform transition hover:-translate-y-1">
             Get Started
           </button>

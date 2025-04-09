@@ -8,6 +8,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<AccuTaxLanding />} />
+        <Route path="/login" element={<LoginPage />} />
         
       </Routes>
     </Router>

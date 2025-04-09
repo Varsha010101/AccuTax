@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { User, Lock, Mail, Phone, ArrowRight, CheckCircle } from 'lucide-react';
 
