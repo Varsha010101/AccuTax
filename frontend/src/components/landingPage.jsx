@@ -1,197 +1,214 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Shield, CheckCircle, FileText, Clock, ArrowRight } from 'lucide-react';
+import { ChevronRight, Shield, FileText, Clock, Check, ArrowRight } from 'lucide-react';
 
-export default function AccuTaxLanding() {
+function LandingPage() {
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState({
-    hero: false,
+    hero: true,
     features: false,
     security: false,
     cta: false
   });
 
-  // Handle scroll events
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
       
-      // Set visibility based on scroll position
       setIsVisible({
-        hero: window.scrollY > 10,
-        features: window.scrollY > 200,
-        security: window.scrollY > 400,
-        cta: window.scrollY > 600
+        hero: true,
+        features: window.scrollY > 100,
+        security: window.scrollY > 300,
+        cta: window.scrollY > 500
       });
     };
 
     window.addEventListener('scroll', handleScroll);
-    
-    // Set initial visibility for hero section
-    setTimeout(() => {
-      setIsVisible(prev => ({ ...prev, hero: true }));
-    }, 300);
-
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Features data
-  const features = [
-    {
-      icon: <FileText className="text-blue-600" size={28} />,
-      title: "Simple Filing",
-      description: "Complete your taxes in minutes with our guided process."
-    },
-    {
-      icon: <Shield className="text-blue-600" size={28} />,
-      title: "Secure & Protected",
-      description: "Bank-level encryption for all your sensitive information."
-    },
-    {
-      icon: <Clock className="text-blue-600" size={28} />,
-      title: "Fast Returns",
-      description: "Get your refund faster with our expedited processing."
-    }
-  ];
-
   return (
-    <div className="font-sans text-gray-800 overflow-x-hidden">
-      {/* Navbar */}
-      <nav className={`fixed w-full py-4 transition-all duration-300 z-10 ${scrollY > 20 ? 'bg-white shadow-md' : 'bg-transparent'}`}>
-        <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center">
-            <Shield className="text-blue-600 mr-2" size={28} />
-            <span className="font-bold text-2xl text-blue-900">AccuTax</span>
-          </div>
-          <div className="hidden md:flex space-x-8">
-            <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
-            <a href="#security" className="hover:text-blue-600 transition-colors">Security</a>
-            <a href="#" className="hover:text-blue-600 transition-colors">About</a>
-            <a href="#" className="hover:text-blue-600 transition-colors">Contact</a>
-          </div>
-          <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors shadow-md">
-            Sign In
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 font-sans">
+      {/* Navigation */}
+      <nav className="fixed w-full bg-white shadow-sm py-4 px-6 flex justify-between items-center z-50 backdrop-blur-sm bg-opacity-90">
+        <div className="flex items-center">
+          <div className="text-blue-600 font-bold text-2xl">AccuTax</div>
+          <div className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Beta</div>
+        </div>
+        
+        <div className="hidden md:flex space-x-6 text-gray-600">
+          <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
+          <a href="#security" className="hover:text-blue-600 transition-colors">Security</a>
+          <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
+        </div>
+        
+        <div className="flex space-x-4">
+          <button className="px-4 py-2 text-blue-600 hover:text-blue-800 transition-colors">Log In</button>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transform transition hover:-translate-y-1">
+            Get Started
           </button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 to-gray-100">
-        <div className="container mx-auto px-6">
-          <div className={`max-w-3xl transition-all duration-1000 transform ${isVisible.hero ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <h1 className="text-5xl font-bold text-blue-900 mb-6">Taxes Made Simple, Secure, and Accurate</h1>
-            <p className="text-xl text-gray-600 mb-8">AccuTax automates your tax filing process with enterprise-grade security and accuracy guarantees.</p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-blue-600 text-white px-8 py-3 rounded shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center">
-                Start Filing Now <ArrowRight className="ml-2" size={18} />
-              </button>
-              <button className="border border-blue-600 text-blue-600 px-8 py-3 rounded hover:bg-blue-50 transition-all">
-                Learn More
-              </button>
-            </div>
+      <section className="pt-32 pb-20 px-6 md:px-20 relative overflow-hidden">
+        <div className={`max-w-5xl mx-auto transition-all duration-1000 ${isVisible.hero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight">
+            File Your Taxes with <span className="text-blue-600">Confidence</span> and <span className="text-blue-600">Ease</span>
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mb-10">
+            AccuTax streamlines your tax filing process with bank-level security and AI-powered accuracy.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-medium shadow-lg hover:bg-blue-700 transform transition hover:-translate-y-1 flex items-center">
+              Start Filing Now <ChevronRight className="ml-2" size={20} />
+            </button>
+            <button className="px-8 py-4 bg-white text-blue-600 border border-blue-200 rounded-lg text-lg font-medium shadow hover:bg-blue-50 transform transition hover:-translate-y-1">
+              Watch Demo
+            </button>
           </div>
         </div>
+
+        {/* Animated background elements */}
+        <div className="absolute right-0 top-40 w-1/3 h-64 bg-blue-500 rounded-full filter blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute left-10 bottom-10 w-1/4 h-64 bg-green-500 rounded-full filter blur-3xl opacity-10 animate-pulse delay-1000"></div>
       </section>
 
-      {/* Floating Security Badge */}
-      <div className="container mx-auto px-6 relative">
-        <div className="absolute right-10 -top-16 bg-white rounded-lg shadow-xl p-6 max-w-xs flex items-center gap-4 border-l-4 border-blue-600">
-          <div className="bg-blue-100 p-3 rounded-full animate-pulse">
-            <Shield className="text-blue-600" size={28} />
-          </div>
-          <div>
-            <h3 className="font-bold text-blue-900">256-bit Encryption</h3>
-            <p className="text-sm text-gray-600">Your data is always protected</p>
-          </div>
-        </div>
-      </div>
-
       {/* Features Section */}
-      <section id="features" className="py-20">
-        <div className="container mx-auto px-6">
-          <h2 className={`text-3xl font-bold text-center mb-16 text-blue-900 transition-all duration-1000 transform ${isVisible.features ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            Streamlined for Your Peace of Mind
+      <section id="features" className="py-20 px-6 md:px-20 bg-white">
+        <div className={`max-w-5xl mx-auto transition-all duration-1000 ${isVisible.features ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-16">
+            Smart Features for <span className="text-blue-600">Effortless</span> Filing
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className={`bg-white p-6 rounded-lg shadow-lg border-t-4 border-blue-600 hover:shadow-xl transition-all duration-300 transform ${isVisible.features ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                style={{ transitionDelay: `${index * 200}ms` }}
-              >
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold mb-2 text-blue-900">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+          <div className="grid md:grid-cols-3 gap-10">
+            {/* Feature 1 */}
+            <div className="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-2">
+              <div className="bg-blue-100 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                <FileText className="text-blue-600" size={24} />
               </div>
-            ))}
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">Smart Document Scanning</h3>
+              <p className="text-gray-600">Automatically extract data from your tax documents with precision.</p>
+            </div>
+            
+            {/* Feature 2 */}
+            <div className="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-2 delay-100">
+              <div className="bg-green-100 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                <Shield className="text-green-600" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">Bank-Level Security</h3>
+              <p className="text-gray-600">Your data is protected with end-to-end encryption and secure storage.</p>
+            </div>
+            
+            {/* Feature 3 */}
+            <div className="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-2 delay-200">
+              <div className="bg-purple-100 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                <Clock className="text-purple-600" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">Fast Processing</h3>
+              <p className="text-gray-600">Complete your taxes in minutes, not hours. Receive refunds quickly.</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Security Section */}
-      <section id="security" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-6">
-          <div className={`max-w-3xl mx-auto text-center transition-all duration-1000 transform ${isVisible.security ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <h2 className="text-3xl font-bold mb-8 text-blue-900">Bank-Level Security for Your Data</h2>
-            <p className="text-gray-600 mb-12">Your financial information deserves the highest level of protection. AccuTax employs industry-leading security measures.</p>
-          </div>
+      <section id="security" className="py-20 px-6 md:px-20 bg-gray-50">
+        <div className={`max-w-5xl mx-auto transition-all duration-1000 ${isVisible.security ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-16">
+            <span className="text-blue-600">Security</span> You Can Trust
+          </h2>
           
-          <div className={`grid md:grid-cols-3 gap-6 max-w-4xl mx-auto transition-all duration-1000 transform ${isVisible.security ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            {[
-              { text: "256-bit Encryption", delay: 0 },
-              { text: "SOC 2 Compliant", delay: 200 },
-              { text: "Data Protection", delay: 400 },
-              { text: "Secure Servers", delay: 600 },
-              { text: "Regular Audits", delay: 800 },
-              { text: "Privacy Guarantee", delay: 1000 }
-            ].map((item, index) => (
-              <div 
-                key={index} 
-                className="flex items-center bg-white p-4 rounded shadow-md"
-                style={{ transitionDelay: `${item.delay}ms` }}
-              >
-                <CheckCircle className="text-green-500 mr-2" size={20} />
-                <span>{item.text}</span>
+          <div className="bg-white p-8 rounded-2xl shadow-md">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex flex-col justify-center">
+                <h3 className="text-2xl font-semibold mb-6 text-gray-800">We Take Security Seriously</h3>
+                <ul className="space-y-4">
+                  {[
+                    "256-bit encryption for all data transfers",
+                    "Multi-factor authentication",
+                    "Regular security audits and compliance checks",
+                    "Secure data storage with automatic backups"
+                  ].map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <div className="mt-1 bg-green-100 p-1 rounded-full">
+                        <Check className="text-green-600" size={16} />
+                      </div>
+                      <span className="ml-3 text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            ))}
+              
+              <div className="relative flex items-center justify-center">
+                <div className="absolute w-64 h-64 bg-blue-600 rounded-full opacity-5 animate-ping"></div>
+                <div className="absolute w-32 h-32 bg-blue-600 rounded-full opacity-10 animate-pulse"></div>
+                <Shield className="text-blue-600 relative z-10" size={100} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-6">
-          <div className={`bg-blue-600 rounded-2xl p-10 text-white text-center max-w-4xl mx-auto transition-all duration-1000 transform ${isVisible.cta ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <h2 className="text-3xl font-bold mb-6">Ready to File with Confidence?</h2>
-            <p className="mb-8 max-w-2xl mx-auto">Join thousands of satisfied customers who have simplified their tax filing process with AccuTax.</p>
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-blue-50 transition-all shadow-md">
-              Start Your Tax Return Now
-            </button>
-          </div>
+      <section className="py-20 px-6 md:px-20 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+        <div className={`max-w-5xl mx-auto text-center transition-all duration-1000 ${isVisible.cta ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to simplify your tax filing?</h2>
+          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+            Join thousands who have already discovered the easiest way to file taxes.
+          </p>
+          <button className="px-8 py-4 bg-white text-blue-600 rounded-lg text-lg font-medium shadow-lg hover:bg-blue-50 transform transition hover:-translate-y-1 flex items-center mx-auto">
+            Get Started Today <ArrowRight className="ml-2" size={20} />
+          </button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-10">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-6 md:mb-0">
-              <Shield className="text-blue-400 mr-2" size={24} />
-              <span className="font-bold text-xl">AccuTax</span>
+      <footer className="bg-gray-900 text-gray-400 py-12 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between mb-10">
+            <div className="mb-8 md:mb-0">
+              <div className="text-white font-bold text-2xl mb-4">AccuTax</div>
+              <p className="max-w-xs">Automated tax filing with security and accuracy you can trust.</p>
             </div>
-            <div className="flex space-x-6 text-sm text-gray-400">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-white transition-colors">Contact Us</a>
-              <a href="#" className="hover:text-white transition-colors">Support</a>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
+              <div>
+                <h3 className="text-white font-semibold mb-4">Company</h3>
+                <ul className="space-y-2">
+                  <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="text-white font-semibold mb-4">Resources</h3>
+                <ul className="space-y-2">
+                  <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">FAQs</a></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="text-white font-semibold mb-4">Legal</h3>
+                <ul className="space-y-2">
+                  <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
+                </ul>
+              </div>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm">
-            <p>© {new Date().getFullYear()} AccuTax. All rights reserved.</p>
+          
+          <div className="pt-8 border-t border-gray-800 text-sm text-center">
+            &copy; {new Date().getFullYear()} AccuTax. All rights reserved.
           </div>
         </div>
       </footer>
     </div>
   );
 }
+
+export default LandingPage;
