@@ -1,6 +1,6 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { User, Lock, Mail, Phone, ArrowRight, CheckCircle } from 'lucide-react';
+import axios from 'axios';
 
 function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,18 +20,52 @@ function AuthPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-    }, 2000);
+    try {
+      const endpoint = isLogin ? 'http://localhost:8000/login' : 'http://localhost:8000/signup';
+      const payload = isLogin
+        ? { name: formData.name, password: formData.password }
+        : {
+            fname: formData.fname,
+            lname: formData.lname,
+            contact: formData.contact,
+            password: formData.password
+          };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        setIsSubmitted(true);
+        setTimeout(() => {
+          setIsSubmitted(false);
+        }, 2000);
+      } else {
+        alert(result.message || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error connecting to server.');
+    }
   };
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setIsSubmitted(false);
+    setFormData({
+      name: '',
+      password: '',
+      fname: '',
+      lname: '',
+      contact: ''
+    });
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
@@ -166,19 +200,7 @@ function AuthPage() {
                         />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="block text-gray-700">Email</label>
-                      <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
-                        <Mail size={18} className="text-gray-400 mr-2" />
-                        <input
-                          type="email"
-                          name="email"
-                          className="flex-1 outline-none"
-                          placeholder="Your email"
-                          required
-                        />
-                      </div>
-                    </div>
+                   
                     <div className="space-y-2">
                       <label className="block text-gray-700">Password</label>
                       <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
