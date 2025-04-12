@@ -1,5 +1,3 @@
-# main.py (inside backend/)
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import user
@@ -10,24 +8,25 @@ import os
 # Load environment variables
 load_dotenv()
 
+# Initialize FastAPI app
 app = FastAPI()
 
-# Create database tables
+# Create database tables (ensure that the database is running)
 Base.metadata.create_all(bind=engine)
 
-# ✅ Enable CORS
+# Enable CORS for the frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Replace with your frontend domain if deployed
+    allow_origins=["http://localhost:5173"],  # Adjust the port if different
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
 )
 
-# ✅ Include signup and login routes
+# Include the user-related routes (signup, login)
 app.include_router(user.router)
 
-# ✅ Test route
+# Test route to ensure backend is connected
 @app.get("/")
 def read_root():
     return {"message": "Backend is connected successfully 🎉"}

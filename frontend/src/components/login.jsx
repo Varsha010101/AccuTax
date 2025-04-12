@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, Mail, Phone, ArrowRight, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import { User, Lock, Phone, ArrowRight, CheckCircle } from 'lucide-react';
 
 function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -65,7 +64,6 @@ function AuthPage() {
       contact: ''
     });
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
@@ -200,7 +198,6 @@ function AuthPage() {
                         />
                       </div>
                     </div>
-                   
                     <div className="space-y-2">
                       <label className="block text-gray-700">Password</label>
                       <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
@@ -249,7 +246,7 @@ function AuthPage() {
       <div className="fixed top-20 left-20 w-16 h-16 bg-blue-500 opacity-10 rounded-full animate-float1"></div>
       <div className="fixed bottom-20 right-20 w-24 h-24 bg-blue-400 opacity-10 rounded-full animate-float2"></div>
       <div className="fixed top-1/3 right-1/4 w-12 h-12 bg-blue-600 opacity-10 rounded-full animate-float3"></div>
-      
+
       <style jsx>{`
         @keyframes float1 {
           0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -260,25 +257,12 @@ function AuthPage() {
           50% { transform: translateY(-30px) rotate(-10deg); }
         }
         @keyframes float3 {
-          0%, 100% { transform: translateX(0) translateY(0); }
-          50% { transform: translateX(-20px) translateY(20px); }
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(5deg); }
         }
-        .animate-float1 {
-          animation: float1 7s ease-in-out infinite;
-        }
-        .animate-float2 {
-          animation: float2 10s ease-in-out infinite;
-        }
-        .animate-float3 {
-          animation: float3 8s ease-in-out infinite;
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        .animate-float1 { animation: float1 6s ease-in-out infinite; }
+        .animate-float2 { animation: float2 8s ease-in-out infinite; }
+        .animate-float3 { animation: float3 5s ease-in-out infinite; }
       `}</style>
     </div>
   );
