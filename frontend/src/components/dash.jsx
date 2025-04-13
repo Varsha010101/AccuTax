@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, 
   FileText, 
@@ -33,7 +34,7 @@ const Dashboard = () => {
   const [taxData, setTaxData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
-
+  const navigate = useNavigate();
   // Simulate fetching user data from backend
   useEffect(() => {
     // In a real app, replace with actual API calls
@@ -83,6 +84,9 @@ const Dashboard = () => {
         </div>
       </div>
     );
+  }
+  const handleRedirect = () => {
+    navigate('/cal'); // Redirect to "/cal" when button is clicked
   }
 
   return (
@@ -196,9 +200,10 @@ const Dashboard = () => {
                 <h1 className="text-2xl font-bold text-gray-800">Welcome back, {userData.name.split(' ')[0]}!</h1>
                 <p className="text-gray-600 mt-1">Here's an overview of your tax filing history and status.</p>
               </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Start 2025 Filing
-              </button>
+              <button
+      onClick={handleRedirect} // Add onClick handler to trigger redirect
+      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Start 2025 Filing
+    </button>
             </div>
           </section>
           
