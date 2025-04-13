@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { User, Lock, Phone, ArrowRight, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    name: '',
-    password: '',
     fname: '',
     lname: '',
-    contact: ''
+    contact: '',
+    password: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  const navigate = useNavigate(); // Hook for navigation
 
   const handleChange = (e) => {
     setFormData({
@@ -22,9 +24,12 @@ function AuthPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Determine the endpoint based on login/signup
       const endpoint = isLogin ? 'http://localhost:8000/login' : 'http://localhost:8000/signup';
+      
+      // Set payload for either login or signup
       const payload = isLogin
-        ? { name: formData.name, password: formData.password }
+        ? { fname: formData.fname, password: formData.password }
         : {
             fname: formData.fname,
             lname: formData.lname,
@@ -32,6 +37,7 @@ function AuthPage() {
             password: formData.password
           };
 
+      // Send API request to the backend
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,12 +45,27 @@ function AuthPage() {
       });
 
       const result = await res.json();
+
       if (res.ok) {
-        setIsSubmitted(true);
-        setTimeout(() => {
-          setIsSubmitted(false);
-        }, 2000);
+        setIsSubmitted(true); // Set the submitted state to true after successful form submission
+
+        if (isLogin) {
+          // Store token in local storage for later authentication
+          localStorage.setItem('token', result.access_token);
+
+          // After a delay, redirect to the dashboard
+          setTimeout(() => {
+            navigate('/dash'); // React Router-based redirect to the dashboard
+          }, 1000);
+        } else {
+          // If signup, reset form and switch to login
+          setTimeout(() => {
+            setIsSubmitted(false);
+            toggleForm();
+          }, 2000);
+        }
       } else {
+        // Show error message if the response is not successful
         alert(result.message || 'Something went wrong. Please try again.');
       }
     } catch (err) {
@@ -54,14 +75,13 @@ function AuthPage() {
   };
 
   const toggleForm = () => {
-    setIsLogin(!isLogin);
-    setIsSubmitted(false);
+    setIsLogin(!isLogin); // Toggle between login and signup form
+    setIsSubmitted(false); // Reset the form submission state
     setFormData({
-      name: '',
-      password: '',
       fname: '',
       lname: '',
-      contact: ''
+      contact: '',
+      password: ''
     });
   };
 
@@ -124,8 +144,8 @@ function AuthPage() {
                         <User size={18} className="text-gray-400 mr-2" />
                         <input
                           type="text"
-                          name="name"
-                          value={formData.name}
+                          name="fname"
+                          value={formData.fname}
                           onChange={handleChange}
                           className="flex-1 outline-none"
                           placeholder="Enter your username"
