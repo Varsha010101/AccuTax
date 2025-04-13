@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Check,
   ChevronDown,
@@ -12,7 +11,6 @@ import {
   Sparkles,
   CreditCard,
   Heart,
- 
   Handshake
 } from "lucide-react";
 
@@ -27,16 +25,18 @@ export default function AccuTaxForm() {
     section80G: ""
   });
 
-  const [taxableIncome, setTaxableIncome] = useState(0);
-  const [taxPayable, setTaxPayable] = useState(0);
+  const [taxSummary, setTaxSummary] = useState({
+    taxableIncome: 0,
+    taxPayable: 0,
+  });
+
   const [activeSection, setActiveSection] = useState(0);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [animateForm, setAnimateForm] = useState(false);
 
+  // Recalculate tax whenever form data changes
   useEffect(() => {
     setAnimateForm(true);
     
-    // Calculate taxable income and tax payable whenever form data changes
     const calculateTax = () => {
       const income = parseFloat(formData.annualIncome) || 0;
       const deductions = (
@@ -46,22 +46,23 @@ export default function AccuTaxForm() {
         (parseFloat(formData.section80G) || 0)
       );
       
-      const taxable = Math.max(0, income - deductions);
-      setTaxableIncome(taxable);
+      const taxableIncome = Math.max(0, income - deductions);
       
-      // Simple tax calculation (example only)
       let tax = 0;
-      if (taxable > 1000000) {
-        tax = 300000 + (taxable - 1000000) * 0.3;
-      } else if (taxable > 500000) {
-        tax = 50000 + (taxable - 500000) * 0.2;
-      } else if (taxable > 250000) {
-        tax = (taxable - 250000) * 0.1;
+      if (taxableIncome > 1000000) {
+        tax = 300000 + (taxableIncome - 1000000) * 0.3;
+      } else if (taxableIncome > 500000) {
+        tax = 50000 + (taxableIncome - 500000) * 0.2;
+      } else if (taxableIncome > 250000) {
+        tax = (taxableIncome - 250000) * 0.1;
       }
-      
-      setTaxPayable(tax);
+
+      setTaxSummary({
+        taxableIncome: taxableIncome,
+        taxPayable: tax
+      });
     };
-    
+
     calculateTax();
   }, [formData]);
 
