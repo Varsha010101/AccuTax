@@ -16,6 +16,7 @@ import {
 
 export default function AccuTaxForm() {
   const [formData, setFormData] = useState({
+    userId: 1,  // Assume user ID is 1, can be dynamic based on session or authentication
     annualIncome: "",
     prevYearIncome: "",
     secondLastYearIncome: "",
@@ -30,42 +31,11 @@ export default function AccuTaxForm() {
     taxPayable: 0,
   });
 
-  const [activeSection, setActiveSection] = useState(0);
-  const [animateForm, setAnimateForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  // Recalculate tax whenever form data changes
-  useEffect(() => {
-    setAnimateForm(true);
-    
-    const calculateTax = () => {
-      const income = parseFloat(formData.annualIncome) || 0;
-      const deductions = (
-        (parseFloat(formData.section80C) || 0) +
-        (parseFloat(formData.section80D) || 0) +
-        (parseFloat(formData.section80E) || 0) +
-        (parseFloat(formData.section80G) || 0)
-      );
-      
-      const taxableIncome = Math.max(0, income - deductions);
-      
-      let tax = 0;
-      if (taxableIncome > 1000000) {
-        tax = 300000 + (taxableIncome - 1000000) * 0.3;
-      } else if (taxableIncome > 500000) {
-        tax = 50000 + (taxableIncome - 500000) * 0.2;
-      } else if (taxableIncome > 250000) {
-        tax = (taxableIncome - 250000) * 0.1;
-      }
-
-      setTaxSummary({
-        taxableIncome: taxableIncome,
-        taxPayable: tax
-      });
-    };
-
-    calculateTax();
-  }, [formData]);
-
+  // Function to handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -74,11 +44,43 @@ export default function AccuTaxForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Tax form submitted successfully!");
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('http://localhost:8000/submit_tax_form/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit tax data');
+      }
+
+      const result = await response.json();
+
+      // Set the tax summary from the response
+      setTaxSummary({
+        taxableIncome: result.taxable_income || 0,
+        taxPayable: result.tax_payable || 0
+      });
+
+      setFormSubmitted(true);
+    } catch (err) {
+      console.error('Error submitting tax data:', err);
+      setError('Failed to submit your tax data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Currency formatting function
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -87,11 +89,13 @@ export default function AccuTaxForm() {
     }).format(value);
   };
 
+  // Sections for the form
   const sections = [
     { title: "Income Details", icon: <DollarSign /> },
     { title: "Deductions", icon: <FileText /> },
     { title: "Tax Summary", icon: <Check /> }
   ];
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -146,6 +150,29 @@ export default function AccuTaxForm() {
           </div>
         </div>
       </nav>
+
+      {/* Status Notifications */}
+      {isLoading && (
+        <div className="fixed top-4 right-4 bg-blue-50 text-blue-700 px-4 py-2 rounded-md shadow-md flex items-center">
+          <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+          Processing...
+        </div>
+      )}
+      
+      {error && (
+        <div className="fixed top-4 right-4 bg-red-50 text-red-700 px-4 py-2 rounded-md shadow-md flex items-center">
+          <div className="mr-2"></div>
+          {error}
+        </div>
+      )}
+      
+      {formSubmitted && (
+  <div className="fixed top-4 right-4 bg-green-50 text-green-700 px-4 py-2 rounded-md shadow-md flex items-center">
+    <div className="mr-2">✓</div>
+    Tax form submitted successfully!
+  </div>
+)}
+
 
       {/* Main Content */}
       <div 
@@ -347,7 +374,6 @@ export default function AccuTaxForm() {
                   className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
                 >
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    
                     Section 80E - Education Loans
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
@@ -445,7 +471,7 @@ export default function AccuTaxForm() {
                     <div className="flex justify-between items-center">
                       <div className="text-sm font-medium text-gray-700">Taxable Income</div>
                       <div className="text-xl font-semibold text-gray-900">
-                        {formatCurrency(taxableIncome)}
+                        {formatCurrency(taxSummary.taxableIncome)}
                       </div>
                     </div>
                   </div>
@@ -454,7 +480,7 @@ export default function AccuTaxForm() {
                     <div className="flex justify-between items-center">
                       <div className="text-sm font-medium text-gray-700">Tax Payable</div>
                       <div className="text-xl font-semibold text-blue-600">
-                        {formatCurrency(taxPayable)}
+                        {formatCurrency(taxSummary.taxPayable)}
                       </div>
                     </div>
                   </div>
@@ -469,7 +495,7 @@ export default function AccuTaxForm() {
                         <span className="text-sm text-gray-700">Current Year (2025)</span>
                       </div>
                       <div className="text-sm font-medium">
-                        Taxable Income: <span className="text-gray-900">{formatCurrency(taxableIncome)}</span>
+                        Taxable Income: <span className="text-gray-900">{formatCurrency(taxSummary.taxableIncome)}</span>
                       </div>
                     </div>
                     
@@ -500,15 +526,31 @@ export default function AccuTaxForm() {
                     type="button"
                     onClick={() => setActiveSection(1)}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                    disabled={isLoading}
                   >
                     Back
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
+                    className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white ${isLoading ? 'bg-gray-400' : formSubmitted ? 'bg-green-500' : 'bg-green-600 hover:bg-green-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200`}
+                    disabled={isLoading || formSubmitted}
                   >
-                    <Sparkles className="mr-2" size={16} />
-                    Submit Tax Form
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                        Processing...
+                      </>
+                    ) : formSubmitted ? (
+                      <>
+                        <Check className="mr-2" size={16} />
+                        Submitted
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2" size={16} />
+                        Submit Tax Form
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
