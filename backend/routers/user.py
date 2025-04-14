@@ -31,7 +31,7 @@ class UserCreate(BaseModel):
     password: str
 
 class UserLogin(BaseModel):
-    fname: str  # Changed from 'contact' to 'fname'
+    fname: str  
     password: str
 
 # Signup route

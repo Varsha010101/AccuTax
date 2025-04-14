@@ -28,9 +28,14 @@ class TaxForm(Base):
         
         # Calculate taxable income
         self.taxable_income = self.annual_income - total_deductions
+        return self.taxable_income
 
     def calculate_tax_payable(self):
-        # Define tax slabs (example: you can modify it according to your requirement)
+        # Ensure taxable income is calculated first
+        if self.taxable_income is None:
+            self.calculate_taxable_income()
+
+        # Define tax slabs (example: modify according to your requirement)
         if self.taxable_income <= 250000:
             self.tax_payable = 0
         elif self.taxable_income <= 500000:
@@ -39,6 +44,12 @@ class TaxForm(Base):
             self.tax_payable = self.taxable_income * 0.1
         else:
             self.tax_payable = self.taxable_income * 0.2
+        
+        return self.tax_payable
+
+    def save_calculations(self, session):
+        # Save the taxable income and tax payable to the database
+        session.commit()  # This will save the updated values to the DB
 
     def __repr__(self):
         return f"<TaxForm {self.id}, User {self.user_id}>"
