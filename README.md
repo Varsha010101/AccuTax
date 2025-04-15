@@ -15,7 +15,7 @@ AccuTax is a powerful and intuitive tax filing platform designed to automate and
 
 ## ⚙️ Tech Stack
 
-- **Frontend:** ReactJS *(Work in Progress)*
+- **Frontend:** ReactJS 
 - **Backend:** FastAPI
 - **Database:** SQL (SQLite/PostgreSQL/MySQL)
 - **Authentication:** JWT / OAuth (Planned)

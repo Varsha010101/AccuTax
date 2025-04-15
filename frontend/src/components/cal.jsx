@@ -16,7 +16,6 @@ import {
 
 export default function AccuTaxForm() {
   const [formData, setFormData] = useState({
-    userId: 1,  // Assume user ID is 1, can be dynamic based on session or authentication
     annualIncome: "",
     prevYearIncome: "",
     secondLastYearIncome: "",
@@ -31,11 +30,57 @@ export default function AccuTaxForm() {
     taxPayable: 0,
   });
 
+  const [activeSection, setActiveSection] = useState(0);
+  const [animateForm, setAnimateForm] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
 
-  // Function to handle input change
+  useEffect(() => {
+    fetchTaxData();
+  }, []);
+
+  const fetchTaxData = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Make the request to your backend API to fetch the data
+      const response = await fetch('http://localhost:8000/api/tax-data');  // Adjust URL for your backend
+
+      if (!response.ok) {
+        throw new Error('Starting with a new form');
+      }
+
+      const data = await response.json();
+
+      // Set the form data with the fetched data
+      setFormData({
+        annualIncome: data.annualIncome || "",
+        prevYearIncome: data.prevYearIncome || "",
+        secondLastYearIncome: data.secondLastYearIncome || "",
+        section80C: data.section80C || "",
+        section80D: data.section80D || "",
+        section80E: data.section80E || "",
+        section80G: data.section80G || ""
+      });
+
+      // Set tax summary data
+      setTaxSummary({
+        taxableIncome: data.taxableIncome || 0,
+        taxPayable: data.taxPayable || 0
+      });
+
+    } catch (err) {
+      console.error('Error fetching tax data:', err);
+      setError('Failed to load your previous tax data. You can continue with a new form.');
+    } finally {
+      setIsLoading(false);
+      setAnimateForm(true);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -44,19 +89,19 @@ export default function AccuTaxForm() {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8000/submit_tax_form/', {
+      // Send the form data to the backend API to submit
+      const response = await fetch('http://localhost:8000/submit_tax_form/', {  // Updated URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData),  // Sending form data
       });
 
       if (!response.ok) {
@@ -64,14 +109,16 @@ export default function AccuTaxForm() {
       }
 
       const result = await response.json();
+      console.log('Tax form submitted successfully:', result);
 
-      // Set the tax summary from the response
+      // Set tax summary from response
       setTaxSummary({
-        taxableIncome: result.taxable_income || 0,
-        taxPayable: result.tax_payable || 0
+        taxableIncome: result.taxableIncome || 0,
+        taxPayable: result.taxPayable || 0
       });
 
       setFormSubmitted(true);
+
     } catch (err) {
       console.error('Error submitting tax data:', err);
       setError('Failed to submit your tax data. Please try again.');
@@ -80,7 +127,6 @@ export default function AccuTaxForm() {
     }
   };
 
-  // Currency formatting function
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -89,12 +135,12 @@ export default function AccuTaxForm() {
     }).format(value);
   };
 
-  // Sections for the form
   const sections = [
     { title: "Income Details", icon: <DollarSign /> },
     { title: "Deductions", icon: <FileText /> },
     { title: "Tax Summary", icon: <Check /> }
   ];
+
 
 
   return (
