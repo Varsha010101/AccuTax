@@ -16,70 +16,27 @@ import {
 
 export default function AccuTaxForm() {
   const [formData, setFormData] = useState({
-    annualIncome: "",
-    prevYearIncome: "",
-    secondLastYearIncome: "",
+    annual_income: "",
+    prev_year_income: "",
+    second_last_year_income: "",
     section80C: "",
     section80D: "",
     section80E: "",
-    section80G: ""
+    section80G: "",
+    user_id: 1 // Adding default user_id as required by the API
   });
 
   const [taxSummary, setTaxSummary] = useState({
-    taxableIncome: 0,
-    taxPayable: 0,
+    taxable_income: 0,
+    tax_payable: 0,
   });
 
   const [activeSection, setActiveSection] = useState(0);
-  const [animateForm, setAnimateForm] = useState(false);
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
-
-  useEffect(() => {
-    fetchTaxData();
-  }, []);
-
-  const fetchTaxData = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Make the request to your backend API to fetch the data
-      const response = await fetch('http://localhost:8000/api/tax-data');  // Adjust URL for your backend
-
-      if (!response.ok) {
-        throw new Error('Starting with a new form');
-      }
-
-      const data = await response.json();
-
-      // Set the form data with the fetched data
-      setFormData({
-        annualIncome: data.annualIncome || "",
-        prevYearIncome: data.prevYearIncome || "",
-        secondLastYearIncome: data.secondLastYearIncome || "",
-        section80C: data.section80C || "",
-        section80D: data.section80D || "",
-        section80E: data.section80E || "",
-        section80G: data.section80G || ""
-      });
-
-      // Set tax summary data
-      setTaxSummary({
-        taxableIncome: data.taxableIncome || 0,
-        taxPayable: data.taxPayable || 0
-      });
-
-    } catch (err) {
-      console.error('Error fetching tax data:', err);
-      setError('Failed to load your previous tax data. You can continue with a new form.');
-    } finally {
-      setIsLoading(false);
-      setAnimateForm(true);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,19 +46,68 @@ export default function AccuTaxForm() {
     });
   };
 
+  // Calculate tax summary when moving to the final section or when deduction values change
+  useEffect(() => {
+    if (activeSection === 2) {
+      calculateTaxSummary();
+    }
+  }, [activeSection, formData.section80C, formData.section80D, formData.section80E, formData.section80G]);
+
+  // Function to calculate tax without saving to database
+  const calculateTaxSummary = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Calculate tax locally - this endpoint should be modified on backend to not save to DB
+      const response = await fetch('http://127.0.0.1:8000/calculate_tax/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to calculate tax');
+      }
+
+      const result = await response.json();
+      
+      // Use the API response for tax calculations
+      setTaxSummary({
+        taxable_income: result.taxable_income || 0,
+        tax_payable: result.tax_payable || 0
+      });
+
+    } catch (err) {
+      console.error('Error calculating tax:', err);
+      setError('Failed to calculate your tax. Please try again.');
+      
+      // Set defaults when API fails - we won't calculate on frontend
+      setTaxSummary({
+        taxable_income: 0,
+        tax_payable: 0
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to submit form and save to database
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      // Send the form data to the backend API to submit
-      const response = await fetch('http://localhost:8000/submit_tax_form/', {  // Updated URL
+      // Send the form data to the backend API to submit and save to DB
+      const response = await fetch('http://127.0.0.1:8000/submit_tax_form/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),  // Sending form data
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -113,8 +119,8 @@ export default function AccuTaxForm() {
 
       // Set tax summary from response
       setTaxSummary({
-        taxableIncome: result.taxableIncome || 0,
-        taxPayable: result.taxPayable || 0
+        taxable_income: result.taxable_income || 0,
+        tax_payable: result.tax_payable || 0
       });
 
       setFormSubmitted(true);
@@ -125,6 +131,14 @@ export default function AccuTaxForm() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleNextSection = (nextSection) => {
+    // If moving from deductions to summary, calculate tax without saving to DB
+    if (activeSection === 1 && nextSection === 2) {
+      calculateTaxSummary();
+    }
+    setActiveSection(nextSection);
   };
 
   const formatCurrency = (value) => {
@@ -140,8 +154,6 @@ export default function AccuTaxForm() {
     { title: "Deductions", icon: <FileText /> },
     { title: "Tax Summary", icon: <Check /> }
   ];
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -207,23 +219,20 @@ export default function AccuTaxForm() {
       
       {error && (
         <div className="fixed top-4 right-4 bg-red-50 text-red-700 px-4 py-2 rounded-md shadow-md flex items-center">
-          <div className="mr-2"></div>
+          <div className="mr-2">⚠️</div>
           {error}
         </div>
       )}
       
       {formSubmitted && (
-  <div className="fixed top-4 right-4 bg-green-50 text-green-700 px-4 py-2 rounded-md shadow-md flex items-center">
-    <div className="mr-2">✓</div>
-    Tax form submitted successfully!
-  </div>
-)}
-
+        <div className="fixed top-4 right-4 bg-green-50 text-green-700 px-4 py-2 rounded-md shadow-md flex items-center">
+          <div className="mr-2">✓</div>
+          Tax form submitted successfully!
+        </div>
+      )}
 
       {/* Main Content */}
-      <div 
-        className={`max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out ${animateForm ? "opacity-100 transform translate-y-0" : "opacity-0 transform -translate-y-4"}`}
-      >
+      <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out opacity-100 transform translate-y-0">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Tax Filing Form 2025</h1>
         
         {/* Progress Tracker */}
@@ -232,7 +241,7 @@ export default function AccuTaxForm() {
             {sections.map((section, index) => (
               <button
                 key={index}
-                onClick={() => setActiveSection(index)}
+                onClick={() => handleNextSection(index)}
                 className={`flex flex-col items-center w-full ${index !== sections.length - 1 ? 'border-r' : ''}`}
               >
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full mb-2 transition-all duration-300 ${
@@ -269,9 +278,7 @@ export default function AccuTaxForm() {
                   Income Details
                 </h2>
                 
-                <div 
-                  className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
-                >
+                <div className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Annual Income (Current Year)
                   </label>
@@ -281,8 +288,8 @@ export default function AccuTaxForm() {
                     </div>
                     <input
                       type="number"
-                      name="annualIncome"
-                      value={formData.annualIncome}
+                      name="annual_income"
+                      value={formData.annual_income}
                       onChange={handleChange}
                       className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md py-3"
                       placeholder="0.00"
@@ -294,9 +301,7 @@ export default function AccuTaxForm() {
                   </div>
                 </div>
                 
-                <div 
-                  className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
-                >
+                <div className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Previous Year's Income
                   </label>
@@ -306,8 +311,8 @@ export default function AccuTaxForm() {
                     </div>
                     <input
                       type="number"
-                      name="prevYearIncome"
-                      value={formData.prevYearIncome}
+                      name="prev_year_income"
+                      value={formData.prev_year_income}
                       onChange={handleChange}
                       className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md py-3"
                       placeholder="0.00"
@@ -319,9 +324,7 @@ export default function AccuTaxForm() {
                   </div>
                 </div>
                 
-                <div 
-                  className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
-                >
+                <div className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Second-Last Year's Income
                   </label>
@@ -331,8 +334,8 @@ export default function AccuTaxForm() {
                     </div>
                     <input
                       type="number"
-                      name="secondLastYearIncome"
-                      value={formData.secondLastYearIncome}
+                      name="second_last_year_income"
+                      value={formData.second_last_year_income}
                       onChange={handleChange}
                       className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md py-3"
                       placeholder="0.00"
@@ -347,7 +350,7 @@ export default function AccuTaxForm() {
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    onClick={() => setActiveSection(1)}
+                    onClick={() => handleNextSection(1)}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                   >
                     Next
@@ -365,9 +368,7 @@ export default function AccuTaxForm() {
                   Deductions
                 </h2>
                 
-                <div 
-                  className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
-                >
+                <div className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <CreditCard size={16} className="mr-2 text-blue-500" />
                     Section 80C - Investments
@@ -391,9 +392,7 @@ export default function AccuTaxForm() {
                   </div>
                 </div>
                 
-                <div 
-                  className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
-                >
+                <div className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Heart size={16} className="mr-2 text-red-500" />
                     Section 80D - Health Insurance
@@ -416,9 +415,7 @@ export default function AccuTaxForm() {
                   </div>
                 </div>
                 
-                <div 
-                  className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
-                >
+                <div className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     Section 80E - Education Loans
                   </label>
@@ -440,9 +437,7 @@ export default function AccuTaxForm() {
                   </div>
                 </div>
                 
-                <div 
-                  className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50"
-                >
+                <div className="transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-md p-4 rounded-md bg-gray-50">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Handshake size={16} className="mr-2 text-green-500" />
                     Section 80G - Donations to Charities
@@ -468,14 +463,14 @@ export default function AccuTaxForm() {
                 <div className="flex justify-between">
                   <button
                     type="button"
-                    onClick={() => setActiveSection(0)}
+                    onClick={() => handleNextSection(0)}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                   >
                     Back
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveSection(2)}
+                    onClick={() => handleNextSection(2)}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                   >
                     Next
@@ -497,7 +492,7 @@ export default function AccuTaxForm() {
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-gray-500">Annual Income</div>
                     <div className="text-lg font-medium text-gray-900">
-                      {formData.annualIncome ? formatCurrency(formData.annualIncome) : "₹0"}
+                      {formData.annual_income ? formatCurrency(formData.annual_income) : "₹0"}
                     </div>
                   </div>
                   
@@ -517,7 +512,7 @@ export default function AccuTaxForm() {
                     <div className="flex justify-between items-center">
                       <div className="text-sm font-medium text-gray-700">Taxable Income</div>
                       <div className="text-xl font-semibold text-gray-900">
-                        {formatCurrency(taxSummary.taxableIncome)}
+                        {formatCurrency(taxSummary.taxable_income)}
                       </div>
                     </div>
                   </div>
@@ -526,7 +521,7 @@ export default function AccuTaxForm() {
                     <div className="flex justify-between items-center">
                       <div className="text-sm font-medium text-gray-700">Tax Payable</div>
                       <div className="text-xl font-semibold text-blue-600">
-                        {formatCurrency(taxSummary.taxPayable)}
+                        {formatCurrency(taxSummary.tax_payable)}
                       </div>
                     </div>
                   </div>
@@ -541,7 +536,7 @@ export default function AccuTaxForm() {
                         <span className="text-sm text-gray-700">Current Year (2025)</span>
                       </div>
                       <div className="text-sm font-medium">
-                        Taxable Income: <span className="text-gray-900">{formatCurrency(taxSummary.taxableIncome)}</span>
+                        Taxable Income: <span className="text-gray-900">{formatCurrency(taxSummary.taxable_income)}</span>
                       </div>
                     </div>
                     
@@ -551,7 +546,7 @@ export default function AccuTaxForm() {
                         <span className="text-sm text-gray-700">Previous Year (2024)</span>
                       </div>
                       <div className="text-sm font-medium">
-                        Taxable Income: <span className="text-gray-900">{formData.prevYearIncome ? formatCurrency(formData.prevYearIncome) : "₹0"}</span>
+                        Taxable Income: <span className="text-gray-900">{formData.prev_year_income ? formatCurrency(formData.prev_year_income) : "₹0"}</span>
                       </div>
                     </div>
                     
@@ -561,7 +556,7 @@ export default function AccuTaxForm() {
                         <span className="text-sm text-gray-700">Second-Last Year (2023)</span>
                       </div>
                       <div className="text-sm font-medium">
-                        Taxable Income: <span className="text-gray-900">{formData.secondLastYearIncome ? formatCurrency(formData.secondLastYearIncome) : "₹0"}</span>
+                        Taxable Income: <span className="text-gray-900">{formData.second_last_year_income ? formatCurrency(formData.second_last_year_income) : "₹0"}</span>
                       </div>
                     </div>
                   </div>
@@ -570,7 +565,7 @@ export default function AccuTaxForm() {
                 <div className="flex justify-between">
                   <button
                     type="button"
-                    onClick={() => setActiveSection(1)}
+                    onClick={() => handleNextSection(1)}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                     disabled={isLoading}
                   >
