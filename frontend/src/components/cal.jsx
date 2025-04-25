@@ -23,7 +23,7 @@ export default function AccuTaxForm() {
     section80D: "",
     section80E: "",
     section80G: "",
-    user_id: "" // Adding default user_id as required by the API
+    user_id: 1 // Adding default user_id as required by the API
   });
 
   const [taxSummary, setTaxSummary] = useState({
