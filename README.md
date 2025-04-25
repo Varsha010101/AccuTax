@@ -37,6 +37,12 @@ AccuTax/
 │
 └── README.md              # Project documentation
 ```
+## Demo
+
+![Demo-1](img1.png) 
+![Demo-2](img2.png)
+![Demo-3](img3.png) 
+
 ## 🛡️ Security & Privacy
 
 AccuTax ensures that user data is never stored or shared without consent. Future versions will include role-based access and encrypted data storage.
