@@ -17,7 +17,7 @@ Base.metadata.create_all(bind=engine)
 # Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Add your Render frontend URL here in production
+    allow_origins=["http://localhost:5173,"],  # Add your Render frontend URL here in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
