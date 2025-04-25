@@ -14,20 +14,25 @@ app = FastAPI()
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-# Enable CORS for the frontend
+# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173"],  # Add your Render frontend URL here in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include user and tax-related routes
+# Include routers
 app.include_router(user.router)
-app.include_router(tax_form.router)  
+app.include_router(tax_form.router)
 
-# Test route to ensure backend is connected
+# Test route
 @app.get("/")
 def read_root():
-    return {"message": "Backend is connected successfully "}
+    return {"message": "Backend is connected successfully"}
+
+# For local development
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
