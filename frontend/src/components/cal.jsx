@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Check,
   ChevronDown,
@@ -23,7 +23,7 @@ export default function AccuTaxForm() {
     section80D: "",
     section80E: "",
     section80G: "",
-    user_id: 1 // Adding default user_id as required by the API
+    user_id: "" // Adding default user_id as required by the API
   });
 
   const [taxSummary, setTaxSummary] = useState({
@@ -46,54 +46,7 @@ export default function AccuTaxForm() {
     });
   };
 
-  // Calculate tax summary when moving to the final section or when deduction values change
-  useEffect(() => {
-    if (activeSection === 2) {
-      calculateTaxSummary();
-    }
-  }, [activeSection, formData.section80C, formData.section80D, formData.section80E, formData.section80G]);
-
-  // Function to calculate tax without saving to database
-  const calculateTaxSummary = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Calculate tax locally - this endpoint should be modified on backend to not save to DB
-      const response = await fetch('http://127.0.0.1:8000/calculate_tax/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to calculate tax');
-      }
-
-      const result = await response.json();
-      
-      // Use the API response for tax calculations
-      setTaxSummary({
-        taxable_income: result.taxable_income || 0,
-        tax_payable: result.tax_payable || 0
-      });
-
-    } catch (err) {
-      console.error('Error calculating tax:', err);
-      setError('Failed to calculate your tax. Please try again.');
-      
-      // Set defaults when API fails - we won't calculate on frontend
-      setTaxSummary({
-        taxable_income: 0,
-        tax_payable: 0
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+ 
   // Function to submit form and save to database
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -135,9 +88,7 @@ export default function AccuTaxForm() {
 
   const handleNextSection = (nextSection) => {
     // If moving from deductions to summary, calculate tax without saving to DB
-    if (activeSection === 1 && nextSection === 2) {
-      calculateTaxSummary();
-    }
+  
     setActiveSection(nextSection);
   };
 
